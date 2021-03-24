@@ -8,9 +8,6 @@ public class Customer {
     private CustType custType;
     
     //constructors
-    public Customer() {
-    }
-
     public Customer(int code, String name,CustType type) {
         this.code=code;
         this.name=name;

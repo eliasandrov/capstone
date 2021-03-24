@@ -47,10 +47,53 @@ public class eshop {
 
        //Add products to database
        logger.info("Inserting products...");
-        eshop.insertProduct(new Product(1,"PRODUCT ONE", 100F));
-        eshop.insertProduct(new Product(2,"PRODUCT TWO", 200F));
+       Product product1=new Product(1,"PRODUCT ONE", 100F);
+        Product product2=new Product(2,"PRODUCT TWO", 200F);
+
+        eshop.insertProduct(product1);
+        eshop.insertProduct(product2);
 
         eshop.selectProduct();
+
+        Customer customer1=new Customer(1,"CUSTOMER ONE", Customer.CustType.B2G);
+        Order order1=new Order(1,customer1, Order.PayentType.CREDIT);
+
+        //should be 100*10*(1-0.5-0.15)=350
+        eshop.addNewOrderItem(order1,product1,10);
+        logger.info("added new order amount= "+order1.getTotalAmountAfterDiscount());
+
+    }
+
+    public void addNewOrderItem(Order order, Product product, int quantity){
+        /* Individuals get no discount
+        ● Business users get a 20% discount
+        ● Government users get a 50% discount
+        ● 10% discount when the customer pays by wire transfer
+        ● 15% discount when the customer uses a credit card
+         */
+
+        double discount =0;
+
+        if (order.getCustomer().getCustType()== Customer.CustType.B2C){
+            discount =0.00;
+        }else if (order.getCustomer().getCustType()== Customer.CustType.B2B){
+            discount =0.20;
+         }else if (order.getCustomer().getCustType()== Customer.CustType.B2G) {
+            discount = 0.50;
+        }
+
+        if (order.getPaymentType()== Order.PayentType.CASH){
+            discount+=0.10;
+        }else if (order.getPaymentType()== Order.PayentType.CREDIT){
+            discount+=0.15;
+        }
+
+        //add the item to the order
+        order.addOrderItem(new OrderItem(product,quantity));
+
+        //update the order total with the discount
+        order.setDiscount(discount);
+
     }
 
     private void selectProduct (){

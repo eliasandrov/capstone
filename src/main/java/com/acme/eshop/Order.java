@@ -8,10 +8,23 @@ public class Order {
     private int orderId;
     private Customer customer;
     private ArrayList<OrderItem> orderItems = new ArrayList<>();//list of items in order
-    private Float totalAmount ;//total order cost
+    private double totalAmountBeforeDiscount;
+    private double discount;
+    private double totalAmountAfterDiscount ;
+    private PayentType paymentType;
 
     //constructor
-    public Order() {
+    public Order(int orderID, Customer customer, PayentType paymentType) {
+        this.orderId=orderID;
+        this.customer=customer;
+        this.paymentType=paymentType;
+    }
+
+    //adds an order item to the order
+    public void addOrderItem(OrderItem oi){
+        orderItems.add(oi);
+        totalAmountBeforeDiscount+=oi.getTotalCost();
+        totalAmountAfterDiscount=totalAmountBeforeDiscount*(1-discount);
     }
 
     public int getOrderId() {
@@ -38,11 +51,36 @@ public class Order {
         this.orderItems = orderItems;
     }
 
-    public Float getTotalAmount() {
-        return totalAmount;
+    public double getTotalAmountBeforeDiscount() {
+        return totalAmountBeforeDiscount;
     }
 
-    public void setTotalAmount(Float totalAmount) {
-        this.totalAmount = totalAmount;
+    public void setTotalAmountBeforeDiscount(double totalAmountBeforeDiscount) {
+        this.totalAmountBeforeDiscount = totalAmountBeforeDiscount;
+    }
+
+    public double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(double discount) {
+        this.discount = discount;
+        totalAmountAfterDiscount=totalAmountBeforeDiscount*(1-discount);
+    }
+
+    public double getTotalAmountAfterDiscount() {
+        return totalAmountAfterDiscount;
+    }
+
+    public void setTotalAmountAfterDiscount(double totalAmountAfterDiscount) {
+        this.totalAmountAfterDiscount = totalAmountAfterDiscount;
+    }
+
+    public PayentType getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(PayentType paymentType) {
+        this.paymentType = paymentType;
     }
 }

@@ -3,7 +3,7 @@ package com.acme.eshop;
 public class OrderItem {
     private Product product;
     private int quantity;
-    private Float totalCost ;
+    private double totalCost ;
 
     public OrderItem() {
     }
@@ -30,7 +30,7 @@ public class OrderItem {
         this.quantity = quantity;
     }
 
-    public Float getTotalCost() {
+    public double getTotalCost() {
         return totalCost;
     }
 
