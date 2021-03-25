@@ -17,7 +17,11 @@ public class OrderService {
         return discount;
     }
 
-    public void addNewOrderItem(Order order, Product product, int quantity){
+    public Order createNewOrder(int orderID, Customer customer, Order.PayentType paymentType){
+        return new Order(orderID, customer, paymentType);
+    }
+
+    public void addNewOrderItem(int orderitemID , Order order, Product product, int quantity){
         /* Individuals get no discount
         ● Business users get a 20% discount
         ● Government users get a 50% discount
@@ -34,7 +38,7 @@ public class OrderService {
         discount = cs.getDiscount(order.getCustomer())+os.getDiscount(order);
 
         //add the item to the order
-        order.addOrderItem(new OrderItem(1,product,quantity));
+        order.addOrderItem(new OrderItem(orderitemID,product,quantity));
 
         //update the order total with the discount
         order.setDiscount(discount);

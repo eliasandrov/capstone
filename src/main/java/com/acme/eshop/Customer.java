@@ -8,10 +8,23 @@ public class Customer {
     private CustType custType;
     
     //constructors
+    public Customer() {
+
+    }
+
     public Customer(int code, String name,CustType type) {
         this.code=code;
         this.name=name;
         this.custType=type;
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "code=" + code +
+                ", name='" + name + '\'' +
+                ", custType=" + custType +
+                '}';
     }
 
     public int getCode() {

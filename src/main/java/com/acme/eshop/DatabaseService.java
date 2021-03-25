@@ -19,10 +19,18 @@ import static java.lang.System.exit;
 public class DatabaseService {
 
     private Logger logger;
-    private static final Properties sqlCommands = new Properties();
-    private static HikariDataSource hikariDatasource;
+    private Properties sqlCommands = new Properties();
+    private HikariDataSource hikariDatasource;
 
     public DatabaseService() {
+    }
+
+    public Properties getSqlCommands() {
+        return sqlCommands;
+    }
+
+    public void setSqlCommands(Properties sqlCommands) {
+        this.sqlCommands = sqlCommands;
     }
 
     public Logger getLogger() {
@@ -33,14 +41,15 @@ public class DatabaseService {
         this.logger = logger;
     }
 
-    public static HikariDataSource getHikariDatasource() {
+    public HikariDataSource getHikariDatasource() {
         return hikariDatasource;
     }
 
     public void setHikariDatasource(HikariDataSource hikariDatasource) {
-        DatabaseService.hikariDatasource = hikariDatasource;
+        this.hikariDatasource = hikariDatasource;
     }
 
+    //list orders
     public void selectOrder (){
         try {
             logger.info("Selecting Orders...");
@@ -85,11 +94,12 @@ public class DatabaseService {
         }
     }
 
-    public void selectProduct (){
+    //list products
+    public void selectProduct () {
         try {
             logger.info("Selecting products...");
             Statement statement = hikariDatasource.getConnection().createStatement();
-            String stmt=sqlCommands.getProperty("product.select.002");
+            String stmt = sqlCommands.getProperty("product.select.002");
             logger.info(stmt);
             ResultSet resultSet = statement.executeQuery(stmt);
 
@@ -107,7 +117,86 @@ public class DatabaseService {
         }
     }
 
-    public void selectCustomer (){
+    //Get customer from database
+    public Customer getCustomer (int customerCode) {
+        int code=0;
+        String name="";
+        Customer.CustType custType= Customer.CustType.B2C;
+
+        try {
+
+            logger.info("getCustomer {}",customerCode);
+            String stmt = sqlCommands.getProperty("customer.select.001");
+            PreparedStatement statement = hikariDatasource.getConnection().prepareStatement(stmt);
+
+            logger.info(stmt);
+
+            statement.setInt(1,customerCode);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while(resultSet.next()) {
+
+                code = resultSet.getInt("CODE");
+                name = resultSet.getString("NAME");
+
+                switch (resultSet.getString("CUSTTYPE")) {
+                    case "B2C":
+                        custType = Customer.CustType.B2C;
+                        break;
+                    case "B2B":
+                        custType = Customer.CustType.B2B;
+                        break;
+                    case "B2G":
+                        custType = Customer.CustType.B2G;
+                        break;
+                    default:
+                        custType = Customer.CustType.B2C;
+                }
+            }
+
+        } catch (SQLException throwables) {
+            logger.error("Error occurred while retrieving data", throwables);
+        }
+
+        return new Customer(customerCode,name,custType);
+
+
+    }
+
+    //Get product from database
+    public Product getProduct (int productCode) {
+        int code=0;
+        String description="";
+        double price =0.00;
+
+        try {
+            logger.info("getProduct {}",productCode);
+            String stmt = sqlCommands.getProperty("product.select.001");
+            PreparedStatement statement = hikariDatasource.getConnection().prepareStatement(stmt);
+
+            logger.info(stmt);
+
+            statement.setInt(1,productCode);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                code = resultSet.getInt("CODE");
+                description = resultSet.getString("DESCRIPTION");
+                price = resultSet.getDouble("PRICE");
+            }
+
+        } catch (SQLException throwables) {
+            logger.error("Error occurred while retrieving data", throwables);
+        }
+
+        return new Product(code,description,price);
+
+    }
+
+    //List customers from database
+    public void selectCustomer() {
         try {
             logger.info("Selecting customers...");
             Statement statement = hikariDatasource.getConnection().createStatement();
@@ -124,11 +213,13 @@ public class DatabaseService {
                 );
                 //@formatter:on
             }
+
         } catch (SQLException throwables) {
             logger.error("Error occurred while retrieving data", throwables);
         }
     }
 
+    //Insert Order to database
     public void insertOrder(Order o) {
         String stmt;
         PreparedStatement preparedStatement;
@@ -178,14 +269,13 @@ public class DatabaseService {
 
     public void insertProduct (Product p) {
         try (PreparedStatement preparedStatement = hikariDatasource.getConnection().prepareStatement(
-
                 sqlCommands.getProperty("product.insert.001"))) {
 
             preparedStatement.clearParameters();
 
             preparedStatement.setInt(1, p.getCode());
             preparedStatement.setString(2, p.getDescription());
-            preparedStatement.setFloat(3, p.getPrice());
+            preparedStatement.setDouble(3, p.getPrice());
 
             preparedStatement.addBatch();
 
@@ -260,6 +350,7 @@ public class DatabaseService {
             return false;
         }
     }
+
 
 
 

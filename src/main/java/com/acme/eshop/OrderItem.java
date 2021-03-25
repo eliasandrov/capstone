@@ -22,6 +22,7 @@ public class OrderItem {
     }
 
     public OrderItem(int id, Product product, int quantity) {
+        this.id=id;
         this.product=product;
         this.quantity=quantity;
         this.totalCost=product.getPrice()*quantity;

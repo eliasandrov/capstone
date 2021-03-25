@@ -5,16 +5,25 @@ import java.lang.*;
 public class Product {
     private int code;
     private String description ;
-    private Float price;
+    private double price;
 
     //constructors
     public Product() {
     }
 
-    public Product(int code, String description, Float price) {
+    public Product(int code, String description, double price) {
         this.code=code;
         this.description=description;
         this.price=price;
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "code=" + code +
+                ", description='" + description + '\'' +
+                ", price=" + price +
+                '}';
     }
 
     public int getCode() {
@@ -33,7 +42,7 @@ public class Product {
         this.description = description;
     }
 
-    public Float getPrice() {
+    public double getPrice() {
         return price;
     }
 

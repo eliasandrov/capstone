@@ -15,6 +15,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Properties;
 import static java.lang.System.exit;
+import static java.lang.System.lineSeparator;
 
 public class eshop {
 
@@ -36,44 +37,65 @@ public class eshop {
         // Start H2 database server
         eshop.startH2Server();
 
-        OrderService orderService = new OrderService();
-        DatabaseService databaseService = new DatabaseService();
-
         //Database Initialize
         eshop.initiateConnectionPooling();
 
+        //OrderService - handles orders logic
+        OrderService orderService = new OrderService();
+
+        //DatabaseService - handles CRDUD operations
+        DatabaseService databaseService = new DatabaseService();
         databaseService.setLogger(logger);
         databaseService.setHikariDatasource(hikariDatasource);
         databaseService.loadSQLStatements();
         databaseService.createTables();
 
+        //ReportingService - handles reports
+        ReportingService reportingService = new ReportingService();
+        reportingService.setLogger(logger);
+        reportingService.setDatabaseService(databaseService);
+
         //Add some products to database
-       logger.info("Inserting products...");
-       Product product1=new Product(1,"PRODUCT ONE", 100F);
-        Product product2=new Product(2,"PRODUCT TWO", 200F);
+        logger.info("Inserting products...");
+        databaseService.insertProduct(new Product(1,"PRODUCT ONE", 100));
+        databaseService.insertProduct(new Product(2,"PRODUCT TWO", 200));
+        databaseService.insertProduct(new Product(3,"PRODUCT THREE", 300));
+        databaseService.selectProduct();//get list of products to check
 
-        databaseService.insertProduct(product1);
-        databaseService.insertProduct(product2);
-        databaseService.selectProduct();
+        //Add some customers to database
+        databaseService.insertCustomer(new Customer(1,"CUSTOMER ONE", Customer.CustType.B2C));
+        databaseService.insertCustomer(new Customer(2,"CUSTOMER TWO", Customer.CustType.B2B));
+        databaseService.insertCustomer(new Customer(3,"CUSTOMER THREE", Customer.CustType.B2G));
+        databaseService.selectCustomer();//get list of customers to check
 
-        //Add a new customer and save to database
-        Customer customer1=new Customer(1,"CUSTOMER ONE", Customer.CustType.B2G);
-        databaseService.insertCustomer(customer1);
-        databaseService.selectCustomer();
+        //Add some ORDERS to database
+        Order order ;
 
-        //Create a new order and save to database
-        Order order1=new Order(1,customer1, Order.PayentType.CREDIT);//amountAfterDiscount=350
-        orderService.addNewOrderItem(order1,product1,10);
+        // ORDER 1 2 items 4500
+        order = orderService.createNewOrder(1,databaseService.getCustomer(1), Order.PayentType.CASH);
+        orderService.addNewOrderItem(1,order,databaseService.getProduct(1),10);
+        orderService.addNewOrderItem(2,order,databaseService.getProduct(2),20);
+        databaseService.insertOrder(order);
 
-        logger.info("added new order amountBeforeDiscount={}, discount={}, amountAfterDiscount={} "
-                ,order1.getTotalAmountBeforeDiscount()
-                ,order1.getDiscount()
-                ,order1.getTotalAmountAfterDiscount()
-        );
+        // ORDER 2 1 item 21000
+        order = orderService.createNewOrder(2,databaseService.getCustomer(2), Order.PayentType.CASH);
+        orderService.addNewOrderItem(3,order,databaseService.getProduct(3),100);
+        databaseService.insertOrder(order);
 
-        databaseService.insertOrder(order1);
-        databaseService.selectOrder();
+        // ORDER 3 2 items 2600
+        order = orderService.createNewOrder(3,databaseService.getCustomer(2), Order.PayentType.CREDIT);
+        orderService.addNewOrderItem(4,order,databaseService.getProduct(1),10);
+        orderService.addNewOrderItem(5,order,databaseService.getProduct(3),10);
+        databaseService.insertOrder(order);
 
+        databaseService.selectOrder(); //check
+
+        //PRINT REPORTS
+        reportingService.numberAndCostOfPurchasesForCustomer(2);
+        reportingService.numberAndCostOfPurchasesForProduct(1);
+        reportingService.totalNumberAndCostOfPurchasesPerCustomer();
+
+        exit(-1);
     }
 
     private void startH2Server() {
@@ -103,6 +125,9 @@ public class eshop {
         config.setMinimumIdle(1);
         config.setMaxLifetime(5);
         config.setAutoCommit(true);
+
+        config.setMaximumPoolSize(200);
+        config.setConnectionTimeout(30000);
 
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtsCacheSize", "500");
