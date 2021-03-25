@@ -1,6 +1,7 @@
 package com.acme.eshop;
 
 public class OrderItem {
+    private int id;
     private Product product;
     private int quantity;
     private double totalCost ;
@@ -8,7 +9,19 @@ public class OrderItem {
     public OrderItem() {
     }
 
-    public OrderItem(Product product,int quantity) {
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setTotalCost(double totalCost) {
+        this.totalCost = totalCost;
+    }
+
+    public OrderItem(int id, Product product, int quantity) {
         this.product=product;
         this.quantity=quantity;
         this.totalCost=product.getPrice()*quantity;
